@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>МедиаПортал | Новости и видео</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Контейнер с макси-шириной */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Шапка сайта */
+        .header {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        /* Сетка для контента */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        /* Блок с новостями */
+        .news-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 2em;
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            display: inline-block;
+        }
+
+        /* Карточка новости */
+        .news-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .news-date {
+            color: #667eea;
+            font-size: 0.9em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .news-title {
+            font-size: 1.5em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .news-description {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .news-tag {
+            display: inline-block;
+            background: #e0e7ff;
+            color: #667eea;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: bold;
+        }
+
+        /* Блок с видео */
+        .video-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .video-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 25px;
+        }
+
+        .video-title {
+            font-size: 1.2em;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 */
+            height: 0;
+            overflow: hidden;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .video-description {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        /* Кнопка добавления (видна только тебе) */
+        .admin-panel {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .admin-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s;
+        }
+
+        .admin-btn:hover {
+            transform: scale(1.05);
+        }
+
+        /* Модальное окно для добавления контента */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .close {
+            font-size: 28px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            width: 100%;
+        }
+
+        /* Адаптивность */
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .modal-content {
+                margin: 10% auto;
+                width: 95%;
+            }
+        }
+        
+        /* Анимация */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .news-card, .video-card {
+            animation: fadeIn 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Шапка -->
+        <div class="header">
+            <h1>Empire Of The Blocks FROZEN BONES</h1>
+            <p>Новости сервера Empire of the blocks</p>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="content-grid">
+            <!-- Блок новостей -->
+            <div class="news-section">
+                <h2 class="section-title">🔥 Последние новости</h2>
+                <div id="news-container"></div>
+            </div>
+
+            <!-- Блок видео -->
+            <div class="video-section">
+                <h2 class="section-title">🎬 Видео недели</h2>
+                <div id="videos-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Панель администратора (видна только тебе, если знаешь пароль) -->
+    <div class="admin-panel">
+        <button class="admin-btn" onclick="checkAdminAccess()">🔐 Редактировать</button>
+    </div>
+
+    <!-- Модальное окно для добавления новости -->
+    <div id="newsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Добавить новость</h2>
+                <span class="close" onclick="closeModal('newsModal')">&times;</span>
+            </div>
+            <form id="newsForm">
+                <div class="form-group">
+                    <label>📅 Дата:</label>
+                    <input type="date" id="newsDate" required>
+                </div>
+                <div class="form-group">
+                    <label>📌 Заголовок:</label>
+                    <input type="text" id="newsTitle" placeholder="Введите заголовок" required>
+                </div>
+                <div class="form-group">
+                    <label>📝 Описание:</label>
+                    <textarea id="newsDesc" placeholder="Введите текст новости..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>🏷️ Тег:</label>
+                    <input type="text" id="newsTag" placeholder="Например: Технологии, Спорт, Кино">
+                </div>
+                <button type="submit" class="submit-btn">➕ Опубликовать новость</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Модальное окно для добавления видео -->
+    <div id="videoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Добавить видео</h2>
+                <span class="close" onclick="closeModal('videoModal')">&times;</span>
+            </div>
+            <form id="videoForm">
+                <div class="form-group">
+                    <label>🎥 Название видео:</label>
+                    <input type="text" id="videoTitle" placeholder="Введите название" required>
+                </div>
+                <div class="form-group">
+                    <label>🔗 Ссылка YouTube:</label>
+                    <input type="text" id="videoUrl" placeholder="https://youtube.com/watch?v=..." required>
+                </div>
+                <div class="form-group">
+                    <label>📖 Описание:</label>
+                    <textarea id="videoDesc" placeholder="Краткое описание видео..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn">🎬 Добавить видео</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // ========== ХРАНИЛИЩЕ ДАННЫХ ==========
+        // Здесь хранятся все новости и видео
+        // ТЫ МОЖЕШЬ РЕДАКТИРОВАТЬ ЭТИ ДАННЫЕ ПРЯМО ЗДЕСЬ
+        
+        let newsData = [
+            {
+                id: 1,
+                date: "2026-05-07",
+                title: "Запуск нового медиапортала!",
+                description: "Приветствуем на сайте новостей проекта Empire of the blocks FROZEN BONES",
+                tag: "Главное"
+            },
+            {
+                id: 2,
+                date: "2026-05-06",
+                title: "обновления",
+                description: "тут я буду писать про обновления сборки, контента, и техработах, не пропустите",
+                tag: "Техчасть"
+            },
+            {
+                id: 3,
+                date: "2026-05-05",
+                title: "сюжет",
+                description: "Новости по сюжету в качестве текста а не видео",
+                tag: "Сюжет"
+            }
+        ];
+        
+        let videosData = [
+            {
+                id: 1,
+                title: "Новости НА сервере",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                description: "внимание ссылки являються плейсхолдерами, пока что они видут на рикролл видео
+(живите с этой информацией)"
+            },
+            {
+                id: 2,
+                title: "Новости в разроботке",
+                url: "https://www.youtube.com/embed/dQw4w9WgXcQ",
+                description: "внимание ссылки являються плейсхолдерами, пока что они видут на рикролл видео
+(живите с этой информацией)"
+            }
+        ];
+        
+        // ========== ФУНКЦИИ ОТОБРАЖЕНИЯ ==========
+        
+        function renderNews() {
+            const container = document.getElementById('news-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            newsData.forEach(news => {
+                const newsCard = document.createElement('div');
+                newsCard.className = 'news-card';
+                newsCard.innerHTML = `
+                    <div class="news-date">📅 ${news.date}</div>
+                    <div class="news-title">${escapeHtml(news.title)}</div>
+                    <div class="news-description">${escapeHtml(news.description)}</div>
+                    <span class="news-tag">🏷️ ${escapeHtml(news.tag)}</span>
+                `;
+                container.appendChild(newsCard);
+            });
+        }
+        
+        function renderVideos() {
+            const container = document.getElementById('videos-container');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            videosData.forEach(video => {
+                const videoCard = document.createElement('div');
+                videoCard.className = 'video-card';
+                videoCard.innerHTML = `
+                    <div class="video-title">🎬 ${escapeHtml(video.title)}</div>
+                    <div class="video-wrapper">
+                        <iframe src="${video.url}" allowfullscreen></iframe>
+                    </div>
+                    <div class="video-description">${escapeHtml(video.description)}</div>
+                `;
+                container.appendChild(videoCard);
+            });
+        }
+        
+        // Функция для безопасного отображения HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+        
+        // ========== АДМИНСКИЕ ФУНКЦИИ (с паролем) ==========
+        
+        function checkAdminAccess() {
+            const password = prompt("🔐 Введите пароль администратора для редактирования:");
+            // ПАРОЛЬ: admin123 (ТЫ МОЖЕШЬ ИЗМЕНИТЬ ЕГО НА СВОЙ)
+            if (password === "admin123") {
+                showAdminPanel();
+            } else {
+                alert("❌ Неверный пароль! У вас нет прав на редактирование.");
+            }
+        }
+        
+        function showAdminPanel() {
+            const choice = confirm("Что хотите добавить?\n\nОК - Новость\nОтмена - Видео");
+            if (choice) {
+                document.getElementById('newsModal').style.display = 'block';
+            } else {
+                document.getElementById('videoModal').style.display = 'block';
+            }
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Добавление новости
+        document.getElementById('newsForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const newNews = {
+                id: newsData.length + 1,
+                date: document.getElementById('newsDate').value,
+                title: document.getElementById('newsTitle').value,
+                description: document.getElementById('newsDesc').value,
+                tag: document.getElementById('newsTag').value || "Новость"
+            };
+            
+            newsData.unshift(newNews); // Добавляем в начало
+            renderNews();
+            saveToLocalStorage();
+            closeModal('newsModal');
+            document.getElementById('newsForm').reset();
+            alert("✅ Новость успешно добавлена!");
+        });
+        
+        // Добавление видео
+        document.getElementById('videoForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            let youtubeUrl = document.getElementById('videoUrl').value;
+            // Конвертируем обычную ссылку в embed
+            if (youtubeUrl.includes('youtube.com/watch?v=')) {
+                const videoId = youtubeUrl.split('v=')[1].split('&')[0];
+                youtubeUrl = `https://www.youtube.com/embed/${videoId}`;
+            } else if (youtubeUrl.includes('youtu.be/')) {
+                const videoId = youtubeUrl.split('youtu.be/')[1].split('?')[0];
+                youtubeUrl = `https://www.youtube.com/embed/${videoId}`;
+            }
+            
+            const newVideo = {
+                id: videosData.length + 1,
+                title: document.getElementById('videoTitle').value,
+                url: youtubeUrl,
+                description: document.getElementById('videoDesc').value
+            };
+            
+            videosData.push(newVideo);
+            renderVideos();
+            saveToLocalStorage();
+            closeModal('videoModal');
+            document.getElementById('videoForm').reset();
+            alert("✅ Видео успешно добавлено!");
+        });
+        
+        // Сохранение в localStorage (чтобы данные не терялись при обновлении)
+        function saveToLocalStorage() {
+            localStorage.setItem('newsData', JSON.stringify(newsData));
+            localStorage.setItem('videosData', JSON.stringify(videosData));
+        }
+        
+        function loadFromLocalStorage() {
+            const savedNews = localStorage.getItem('newsData');
+            const savedVideos = localStorage.getItem('videosData');
+            
+            if (savedNews) {
+                newsData = JSON.parse(savedNews);
+            }
+            if (savedVideos) {
+                videosData = JSON.parse(savedVideos);
+            }
+        }
+        
+        // Закрытие модального окна при клике вне его
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+        
+        // Инициализация
+        loadFromLocalStorage();
+        renderNews();
+        renderVideos();
+    </script>
+</body>
+</html>
